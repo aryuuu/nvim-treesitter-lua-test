@@ -12,6 +12,9 @@ func main() {
 	log.Println(a)
 	c := amin() + kim() + bar()
 	log.Println(c)
+
+	myUser := User{}
+	myUser.GetName()
 }
 
 func foo() {
@@ -20,7 +23,7 @@ func foo() {
 }
 
 func yeah() {
-
+	nooo()
 }
 
 func kim() int {
@@ -48,3 +51,11 @@ func baz() {
 }
 
 func nooo() {}
+
+type User struct {
+	name string
+}
+
+func (u *User) GetName() string  {
+	return u.name
+}

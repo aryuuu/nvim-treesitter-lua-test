@@ -1,0 +1,8 @@
+{
+    "workspace.library": [
+        "/home/fatt/.local/share/nvim/site/pack/packer/start/neodev.nvim/types/nightly",
+        "/usr/share/nvim/runtime/lua",
+        "/home/fatt/project/nvim-treesitter-lua-test/lua",
+        "${3rd}/luv/library"
+    ]
+}
