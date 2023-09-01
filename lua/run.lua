@@ -98,128 +98,96 @@ local language_tree = vim.treesitter.get_parser(bufnr, "go")
 local syntax_tree = language_tree:parse()
 local root = syntax_tree[1]:root()
 
-print("running vim.treesitter.parse_query")
-local query = vim.treesitter.parse_query(
+local query = vim.treesitter.query.parse_query(
 	"go",
 	[[
-; normal function call
-; example:
-; foo()
-
-(function_declaration
-    name: (identifier) @func_name
-    body: (block
-        (call_expression function: (identifier) @callee_name) ; normal function call
-        ; (call_expression function: (selector_expression) @callee_name ; function.call()
-        ; )
+;; normal function call
+(
+  function_declaration
+  name: (identifier) @func_name
+  body: (block
+    (expression_statement
+      (call_expression
+        function: (identifier) @callee_name
+      )
     )
+  )
 )
 
-; function call from another package
-; example:
-; log.Println()
-
-(function_declaration
-    name: (identifier) @func_name
-    body: (block
-        (call_expression function: (selector_expression) @callee_name ; function.call()
-        )
-    )
+;; function call from another package
+;; example:
+;; log.Println()
+(
+  function_declaration
+  name: (identifier) @func_name
+  body: (block
+	(expression_statement
+	  (call_expression
+		function: (selector_expression) @callee_name
+	  )
+	)
+  )
 )
 
-; function call on expression (value might be assigned to var)
-; example:
-; a := bar()
-
-(function_declaration
-    name: (identifier) @func_name
-    body: (block
-        ; (call_expression function: (identifier) @callee_name)
-        (short_var_declaration right: (expression_list (call_expression function: (identifier) @callee_name)))
-    ; short_var_declaration [6, 4] - [6, 14]
-    ;   left: expression_list [6, 4] - [6, 5]
-    ;     identifier [6, 4] - [6, 5]
-    ;   right: expression_list [6, 9] - [6, 14]
-    ;       function: identifier [6, 9] - [6, 12]
-    ;     call_expression [6, 9] - [6, 14]
-
-    )
+;; function call on expression (value might be assigned to var)
+;; example:
+;; a := bar()
+(
+  function_declaration
+  name: (identifier) @func_name
+  body: (block
+	(short_var_declaration
+	  right: (expression_list
+		(call_expression
+		  function: (identifier) @callee_name
+		)
+	  )
+	)
+  )
 )
 
-
-; function call on assignment
-; example:
-; a = bar()
-
-(function_declaration
-    name: (identifier) @func_name
-    body: (block
-        ; (call_expression function: (selector_expression) @callee_name ; function.call()
-        ; )
-        (assignment_statement right: (expression_list (call_expression function: (identifier) @callee_name)))
+;; function call on assignment
+;; example:
+;; a = bar()
+(
+  function_declaration
+  name: (identifier) @func_name
+  body: (block
+    (assignment_statement
+      right: (expression_list
+    	(call_expression
+    	  function: (identifier) @callee_name
+    	 )
+      )
     )
+  )
 )
 
-; ; function call as value on var declaration
-; example:
-; var b = kipuy()
-
-(function_declaration
-    name: (identifier) @func_name
-    body: (block
-        (var_declaration (var_spec value: (expression_list (call_expression function: (identifier) @callee_name))))
-    )
+;; function call as value on var declaration
+;; example:
+;; var b = kipuy()
+(
+  function_declaration
+  name: (identifier) @func_name
+  body: (block
+	(var_declaration
+	  (var_spec
+		value: (expression_list
+		  (call_expression
+			function: (identifier) @callee_name
+		  )
+		)
+	  )
+	)
+  )
 )
-
-;
-;     var_declaration [6, 4] - [6, 17]
-;       var_spec [6, 8] - [6, 17]
-;         name: identifier [6, 8] - [6, 9]
-;         value: expression_list [6, 12] - [6, 17]
-;           call_expression [6, 12] - [6, 17]
-;             function: identifier [6, 12] - [6, 15]
 
 ]]
 )
-print("finished running vim.treesitter.parse_query")
-
--- local query_test = vim.treesitter.parse_query(
--- 	"go",
--- 	[[
--- (function_declaration
---     name: (identifier) @func_name
---     body: (block
---         (call_expression function: (identifier) @callee_name) ; normal function call
---     )
--- )
-
--- ; (
--- ;     (function_declaration
--- ;         name: (identifier) @func_name
--- ;         body: (block
--- ;             (call_expression function: (identifier) @callee_name) ; normal function call
--- ;         )
--- ;     )
--- ;     (function_declaration
--- ;         name: (identifier) @callee_name
--- ;         body: (block
--- ;             (call_expression function: (identifier) @nested_callee_name) ; normal function call
--- ;         )
--- ;     )
--- ; )
--- ]]
--- )
-
--- [[
--- (function_declaration
---     (modifiers
---         (marker_annotation
---             name: (identifier) @annotation (#eq? @annotation "Test")))
---     name: (identifier) @method (#offset! @method))
--- ]]
 
 local my_pairs = {}
 
+-- for _, captures, _ in query:iter_matches(root, bufnr) do
 for _, captures, _ in query:iter_matches(root, bufnr) do
 	-- i(captures)
 	local parent = q.get_node_text(captures[1], bufnr)

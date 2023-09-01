@@ -8,7 +8,8 @@ func main() {
 	var b = kipuy()
 	log.Println(b)
 	a := bar()
-	a = bar()
+	log.Println(a)
+	a = capal()
 	log.Println(a)
 	c := amin() + kim() + bar()
 	log.Println(c)
@@ -27,6 +28,7 @@ func yeah() {
 }
 
 func kim() int {
+	nooo()
 	return 1
 }
 
